@@ -159,3 +159,68 @@ ModerationWorkflow::whereId($post->getId())->send(new PostModeratedEvent($state)
 
 You're done ! The use case we defined is fully implemented using Zenaton, by defining a few classes, with just a few lines of code.
 
+
+
+# Dependency injection in tasks
+
+Having dependency injection in tasks is quite difficult because Symfony
+handles dependency injection in services, and injects dependencies when the container
+instanciates services. Even if we decided to make our tasks services, the injections
+will take place in the constructor or in setters, and dependencies are kept into properties.
+
+This will be an issue because task classes are serialized when using zenaton and we don't really want
+to serialize the task and all its dependencies, we would like to have a very lightweight serialization,
+and be able to inject dependencies when we execute the tasks.
+
+I made a very naive implementation of this, working only for public services.
+
+First, I removed the `handle()` method from the `TaskInterface`.
+
+It allowed me to be able to put any number of parameters needed on the handle method.
+
+Then, in the `Worker` class, just before calling the `handle` method on the task, I'm using some
+reflection to get what parameters are needed, and use the symfony kernel we booted earlier to
+get services that will be needed when calling the handle method.
+
+This very naive implementation is the following:
+
+```
+public function getArguments($task)
+{
+    $arguments = [];
+
+    $reflClass = new \ReflectionClass($task);
+    $reflHandleMethod = $reflClass->getMethod('handle');
+    $reflParameters = $reflHandleMethod->getParameters();
+    foreach ($reflParameters as $parameter) {
+        $reflClass = $parameter->getClass();
+        $classname = $reflClass->getName();
+        $arguments[] = $this->kernel->getContainer()->get($classname);
+    }
+
+    return $arguments;
+}
+```
+
+Finally, calling the `handle` method is done using call_user_func_array()
+to use the return from `getArguments()` as the second parameter.
+
+It makes dependency injection on the method call to work, but only for public services.
+
+A better implementation would be to try to replicate how it's done for Symfony controllers:
+
+First, we will need a ZenatonBundle to make everything transparent for our users.
+
+We will need to register for autoconfiguration implementations of `TaskInterface`.
+We could also completely remove the `TaskInterface` and consider tasks to be of type \callable.
+This will allow users to define tasks also using anonymous functions, and we should be
+able to have dependency injection on these tasks also.
+
+We will then, at container compile time, create public service locators for tasks, like symfony does
+it for the controllers (See `RegisterControllerArgumentLocatorsPass`).
+
+We will then be able to retrieve them from the container to be able to proceed to method dependency injection
+at runtime (See `HttpKernel` and `ArgumentResolver`).
+
+Finally, we will need to introduce different Worker classes depending on the framework
+we use because dependency injection in task in Laravel will like not be the same.
