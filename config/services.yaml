@@ -35,3 +35,14 @@ services:
     # 'arguments' key and define the arguments just below the service class
     App\EventSubscriber\CommentNotificationSubscriber:
         $sender: '%app.notifications.email_sender%'
+
+    # Zenaton Client
+#    Zenaton\Client:
+#        factory: ['Zenaton\Client', 'getInstance']
+#        calls:
+#            - method: 'setAppId'
+#              arguments: ['%env(ZENATON_APP_ID)%']
+#            - method: 'setApiToken'
+#              arguments: ['%env(ZENATON_API_TOKEN)%']
+#            - method: 'setAppEnv'
+#              arguments: ['%env(ZENATON_APP_ENV)%']

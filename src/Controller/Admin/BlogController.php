@@ -11,6 +11,8 @@
 
 namespace App\Controller\Admin;
 
+use App\Async\Event\PostModeratedEvent;
+use App\Async\Workflow\ModerationWorkflow;
 use App\Entity\Post;
 use App\Form\PostType;
 use App\Repository\PostRepository;
@@ -98,6 +100,9 @@ class BlogController extends AbstractController
             // See https://symfony.com/doc/current/book/controller.html#flash-messages
             $this->addFlash('success', 'post.created_successfully');
 
+            // Start moderation Workflow
+            (new ModerationWorkflow($post))->dispatch();
+
             if ($form->get('saveAndCreateNew')->isClicked()) {
                 return $this->redirectToRoute('admin_post_new');
             }
@@ -178,6 +183,27 @@ class BlogController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'post.deleted_successfully');
+
+        return $this->redirectToRoute('admin_post_index');
+    }
+
+    /**
+     * @Route("/{id}/moderate/{state}", methods={"POST"}, name="admin_post_moderate")
+     * @IsGranted("moderate", subject="post")
+     */
+    public function moderate(Request $request, Post $post, $state): Response
+    {
+        if (!$this->isCsrfTokenValid('moderate', $request->request->get('token'))) {
+            return $this->redirectToRoute('admin_post_index');
+        }
+
+        $post->setState((int) $state);
+        $em = $this->getDoctrine()->getManager();
+        $em->flush();
+
+        $this->addFlash('success', 'post.moderated_successfully.'.$state);
+
+        ModerationWorkflow::whereId($post->getId())->send(new PostModeratedEvent($state));
 
         return $this->redirectToRoute('admin_post_index');
     }

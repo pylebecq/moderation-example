@@ -109,6 +109,14 @@
                 <source>action.edit</source>
                 <target>Edit</target>
             </trans-unit>
+            <trans-unit id="action.publish_post">
+                <source>action.publish_post</source>
+                <target>Publish</target>
+            </trans-unit>
+            <trans-unit id="action.reject_post">
+                <source>action.reject_post</source>
+                <target>Reject</target>
+            </trans-unit>
             <trans-unit id="action.edit_post">
                 <source>action.edit_post</source>
                 <target>Edit post</target>
@@ -210,6 +218,10 @@
                 <source>label.tags</source>
                 <target>Tags</target>
             </trans-unit>
+            <trans-unit id="label.state">
+                <source>label.state</source>
+                <target>Status</target>
+            </trans-unit>
             <trans-unit id="label.actions">
                 <source>label.actions</source>
                 <target>Actions</target>
@@ -279,6 +291,14 @@
             <trans-unit id="post.no_posts_found">
                 <source>post.no_posts_found</source>
                 <target>No posts found.</target>
+            </trans-unit>
+            <trans-unit id="post.moderated_successfully.2">
+                <source>post.moderated_successfully.2</source>
+                <target>Post was approved for publication</target>
+            </trans-unit>
+            <trans-unit id="post.moderated_successfully.3">
+                <source>post.moderated_successfully.3</source>
+                <target>Post was rejected</target>
             </trans-unit>
             <trans-unit id="post.created_successfully">
                 <source>post.created_successfully</source>

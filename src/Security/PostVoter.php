@@ -31,6 +31,7 @@ class PostVoter extends Voter
     private const SHOW = 'show';
     private const EDIT = 'edit';
     private const DELETE = 'delete';
+    private const MODERATE = 'moderate';
 
     /**
      * {@inheritdoc}
@@ -38,7 +39,7 @@ class PostVoter extends Voter
     protected function supports($attribute, $subject): bool
     {
         // this voter is only executed for three specific permissions on Post objects
-        return $subject instanceof Post && in_array($attribute, [self::SHOW, self::EDIT, self::DELETE], true);
+        return $subject instanceof Post && in_array($attribute, [self::SHOW, self::EDIT, self::DELETE, self::MODERATE], true);
     }
 
     /**

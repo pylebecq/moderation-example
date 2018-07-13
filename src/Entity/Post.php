@@ -41,6 +41,10 @@ class Post
      */
     public const NUM_ITEMS = 10;
 
+    public const STATE_WAITING_MODERATION = 1;
+    public const STATE_PUBLISHED = 2;
+    public const STATE_REJECTED = 3;
+
     /**
      * @var int
      *
@@ -83,6 +87,12 @@ class Post
     private $content;
 
     /**
+     * @var int
+     * @ORM\Column(type="integer")
+     */
+    private $state;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(type="datetime")
@@ -123,6 +133,7 @@ class Post
 
     public function __construct()
     {
+        $this->state = static::STATE_WAITING_MODERATION;
         $this->publishedAt = new \DateTime();
         $this->comments = new ArrayCollection();
         $this->tags = new ArrayCollection();
@@ -229,5 +240,41 @@ class Post
     public function getTags(): Collection
     {
         return $this->tags;
+    }
+
+    /**
+     * @return int
+     */
+    public function getState(): int
+    {
+        return $this->state;
+    }
+
+    /**
+     * @param int $state
+     */
+    public function setState(int $state): void
+    {
+        if (!\in_array($state, [static::STATE_WAITING_MODERATION, static::STATE_PUBLISHED, static::STATE_REJECTED], true)) {
+            throw new \LogicException('Cannot set an invalid state');
+        }
+
+        $this->state = $state;
+    }
+
+    public function getStateAsString(): string
+    {
+        $strings = [
+            1 => 'Waiting moderation',
+            2 => 'Published',
+            3 => 'Rejected',
+        ];
+
+        return $strings[$this->state];
+    }
+
+    public function isWaitingModeration(): bool
+    {
+        return $this->state === static::STATE_WAITING_MODERATION;
     }
 }

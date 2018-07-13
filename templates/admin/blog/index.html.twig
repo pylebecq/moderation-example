@@ -9,6 +9,7 @@
         <thead>
             <tr>
                 <th scope="col">{{ 'label.title'|trans }}</th>
+                <th scope="col"><i class="fa fa-calendar" aria-hidden="true"></i> {{ 'label.state'|trans }}</th>
                 <th scope="col"><i class="fa fa-calendar" aria-hidden="true"></i> {{ 'label.published_at'|trans }}</th>
                 <th scope="col" class="text-center"><i class="fa fa-cogs" aria-hidden="true"></i> {{ 'label.actions'|trans }}</th>
             </tr>
@@ -20,9 +21,30 @@
                 {# it's not mandatory to set the timezone in localizeddate(). This is done to
                    avoid errors when the 'intl' PHP extension is not available and the application
                    is forced to use the limited "intl polyfill", which only supports UTC and GMT #}
+                <td>
+                    {{ post.stateAsString }}
+                </td>
                 <td>{{ post.publishedAt|localizeddate('medium', 'short', null, 'UTC') }}</td>
                 <td class="text-right">
                     <div class="item-actions">
+                        {% if post.waitingModeration %}
+                        <form style="display: inline" action="{{ url('admin_post_moderate', {id: post.id, state: constant('App\\Entity\\Post::STATE_PUBLISHED')}) }}" method="post">
+                            <input type="hidden" name="token" value="{{ csrf_token('moderate') }}" />
+                            <button type="submit" class="btn btn-sm btn-success btn">
+                                <i class="fa fa-eye" aria-hidden="true"></i>
+                                {{ 'action.publish_post'|trans }}
+                            </button>
+                        </form>
+
+                        <form style="display: inline" action="{{ url('admin_post_moderate', {id: post.id, state: constant('App\\Entity\\Post::STATE_REJECTED')}) }}" method="post">
+                            <input type="hidden" name="token" value="{{ csrf_token('moderate') }}" />
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fa fa-eye" aria-hidden="true"></i>
+                                {{ 'action.reject_post'|trans }}
+                            </button>
+                        </form>
+                        {% endif %}
+
                         <a href="{{ path('admin_post_show', {id: post.id}) }}" class="btn btn-sm btn-default">
                             <i class="fa fa-eye" aria-hidden="true"></i> {{ 'action.show'|trans }}
                         </a>
